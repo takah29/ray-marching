@@ -37,7 +37,8 @@ vec3 ray_march(vec3 p, in vec3 ray) {
     float distance = 0.0;  // レイとオブジェクト間の最短距離
     float len = 0.0;       // レイに継ぎ足す長さ
     vec3 pos = p;          // レイの先端位置
-    vec3 color;
+    vec3 color = vec3(0.0);
+
     // marching loop
     for (int i = 0; i < 128; i++) {
         distance = distance_scene(pos);
@@ -50,8 +51,6 @@ vec3 ray_march(vec3 p, in vec3 ray) {
             float diff = clamp(dot(lightDir, normal), 0.1, 1.0);
             color = vec3(diff);
             break;
-        } else {
-            color = vec3(0.0);
         }
     }
 
