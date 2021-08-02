@@ -1,11 +1,14 @@
+#iUniform int n = 10 in{10, 1280 }
+#iUniform float d = 0.01 in {0.01, 1.0}
+
 precision mediump float;
 uniform float time;
 uniform vec2 mouse;
 uniform vec2 resolution;
 
-#include "object/box.glsl"
-#include "object/plane.glsl"
-#include "object/sphere.glsl"
+#include "object.glsl"
+#include "transform.glsl"
+#include "operation.glsl"
 
 const float PI = 3.14159265;
 const float angle = 60.0;
@@ -13,17 +16,30 @@ const float fov = angle * 0.5 * PI / 180.0;
 
 const vec3 lightDir = vec3(-0.577, 0.577, 0.577);
 
-vec3 trans(in vec3 p, in float scale) { return mod(p, scale) - scale / 2.0; }
-
 // オブジェクト
 Sphere sphere = Sphere(vec3(0.0, 0.0, 0.0), 1.0);
 Box box = Box(vec3(0.0, 0.0, 0.0), vec3(0.5, 0.5, 0.5), 0.1);
-Plane plane = Plane(vec3(0.0, -2.0, 0.0), vec3(0.0, 1.0, 0.0));
+Torus torus = Torus(vec3(0.0, 1.0, -10.0), 10.0, 3.0);
+Plane plane = Plane(vec3(0.0, -0.5, 0.0), vec3(0.0, 1.0, 0.0));
+
+
+// float distance_scene(vec3 p)
+// {
+//     float t = time;
+//     float a = PI * t;
+//     float s = pow(sin(a), 2.0);
+//     float d1 = distance_func(Sphere(vec3(0.0, 0.0, 0.0), 0.75), p);
+//     float d2 = distance_func(Sphere(vec3(0.0), 0.1), trans(p, 0.5));
+//     return mix(d1, d2, s);
+// }
 
 float distance_scene(in vec3 p) {
-    float d1 = distance_func(sphere, trans(p, 4.0));
-    float d2 = distance_func(plane, p);
-    return min(d1, d2);
+    float d1 = distance_func(sphere, repetition(p, vec3(0.0), vec3(4.0)));
+    float d2 = distance_func(torus, p);
+    float d3 = distance_func(plane, p);
+
+    float d = mix(d1, d2, pow(sin(time), 2.0));
+    return op_union(d, d3);
 }
 
 vec3 get_normal(in vec3 p) {
@@ -34,13 +50,13 @@ vec3 get_normal(in vec3 p) {
 }
 
 vec3 ray_march(vec3 p, in vec3 ray) {
-    float distance = 0.0;  // レイとオブジェクト間の最短距離
-    float len = 0.0;       // レイに継ぎ足す長さ
-    vec3 pos = p;          // レイの先端位置
+    float distance = 0.0;
+    float len = 0.0;
+    vec3 pos = p;  // レイの先端位置
     vec3 color = vec3(0.0);
 
     // marching loop
-    for (int i = 0; i < 128; i++) {
+    for (int i = 0; i < n; i++) {
         distance = distance_scene(pos);
         len += distance;
         pos = p + ray * len;
@@ -62,8 +78,8 @@ void main(void) {
     vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
 
     // camera
-    vec3 c_pos = vec3(mouse * 4.0 - 2.0, 2.0);
-    vec3 c_dir = vec3(0.0, 0.0, -1.0);
+    vec3 c_pos = vec3(mouse * 4.0 - vec2(2.0, -10.0), 16.0);
+    vec3 c_dir = vec3(0.0, -1.0, -0.0);
     // vec3 c_up = vec3(0.0    , 1.0, 0.0);
     // vec3 c_side = cross(c_dir, c_up);
     // float targetDepth = 1.0;
