@@ -33,3 +33,15 @@ float distance_func(in Torus torus, in vec3 p) {
     vec2 q = vec2(length(p.xz - torus.center.xz) - torus.radius_a, p.y - torus.center.y);
     return length(q) - torus.radius_b;
 }
+
+// capsule
+struct Capsule {
+    vec3 a;
+    vec3 b;
+    float radius;
+};
+float distance_func(in Capsule capsule, in vec3 p) {
+    vec3 pa = p - capsule.a, ba = capsule.b - capsule.a;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    return length(pa - ba * h) - capsule.radius;
+}
