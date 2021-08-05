@@ -38,18 +38,24 @@ vec3 twist_z(in vec3 p, in float power) {
     return m * p;
 }
 
-vec3 scale_x(in vec3 p, in float s){
-    return vec3(p.x * s, p.yz);
-}
+vec3 scale_x(in vec3 p, in float s) { return vec3(p.x * s, p.yz); }
 
-vec3 scale_y(in vec3 p, in float s){
-    return vec3(p.x, p.y * s, p.z);
-}
+vec3 scale_y(in vec3 p, in float s) { return vec3(p.x, p.y * s, p.z); }
 
-vec3 scale_z(in vec3 p, in float s){
-    return vec3(p.xy, p.z * s);
-}
+vec3 scale_z(in vec3 p, in float s) { return vec3(p.xy, p.z * s); }
 
-vec3 scale_xyz(in vec3 p, in float s){
-    return p * s;
+vec3 scale_xyz(in vec3 p, in float s) { return p * s; }
+
+// クオータニオンによる回転
+vec4 mult_quat(in vec4 p, in vec4 q) {
+    float a = q.w * p.x - q.z * p.y + q.y * p.z + q.x * p.w;
+    float b = q.z * p.x + q.w * p.y - q.x * p.z + q.y * p.w;
+    float c = -q.y * p.x + q.x * p.y + q.w * p.z + q.z * p.w;
+    float d = -q.x * p.x - q.y * p.y - q.z * p.z + q.w * p.w;
+    return vec4(a, b, c, d);
+}
+vec3 angle_axis(in vec3 p, in float rad, in vec3 axis) {
+    vec4 q = vec4(normalize(axis) * sin(rad / 2.0), cos(rad / 2.0));
+    vec4 q_ = vec4(-q.xyz, q.w);
+    return mult_quat(mult_quat(q, vec4(p, 0.0)), q_).xyz;
 }
