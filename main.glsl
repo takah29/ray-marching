@@ -1,7 +1,7 @@
 #iUniform float ring_size = 3.0 in{0.0, 20.0 }
 #iUniform float speed = 1.0 in{0.1, 10.0 }
-#iUniform float morphing = 0.0 in {0.0, 1.0}
-#iUniform float sparseness = 0.4 in {0.4, 1.6}
+#iUniform float morphing = 0.0 in{0.0, 1.0 }
+#iUniform float sparseness = 0.4 in{0.3, 2.0 }
 
 precision mediump float;
 uniform float time;
@@ -25,7 +25,7 @@ const int AO_STEPSIZE = 64;
 
 // オブジェクト
 Sphere sphere = Sphere(vec3(0.0, 0.0, 0.0), 3.0);
-Box box = Box(vec3(0.0, 0.0, 0.0), vec3(0.06, 0.06, 0.06), 0.06);
+Box box = Box(vec3(0.0, 0.0, 0.0), vec3(0.05, 0.05, 0.05), 0.07);
 Torus torus = Torus(vec3(0.0, 0.0, 0.0), 2.0, 1.0);
 Plane plane = Plane(vec3(0.0, -2.0, 0.0), vec3(0.0, 1.0, 0.0));
 
@@ -55,26 +55,24 @@ float gen_shadow(vec3 ro, vec3 rd) {
     float c = 0.001;
     float r = 1.0;
     float shadow_coef = 0.5;
-    for (int i = 0; i < ITER/4; i++) {
+    for (int i = 0; i < ITER / 4; i++) {
         h = distance_scene(ro + rd * c).d;
         if (abs(h) < 0.001) {
             return shadow_coef;
         }
-        r = min(r, h * 32.0 / c);
+        r = min(r, h * 64.0 / c);
         c += h;
     }
     return 1.0 - shadow_coef + r * shadow_coef;
 }
 
-float ambient_occlusion (in vec3 pos, in vec3 normal)
-{
+float ambient_occlusion(in vec3 pos, in vec3 normal) {
     float sum = 0.0;
     float max_sum = 0.0;
-    for (int i = 0; i < AO_STEP; i ++)
-    {
-        vec3 p = pos + normal * float((i+1) * AO_STEPSIZE);
-        sum    += 1. / pow(2., float(i)) * distance_scene(pos).d;
-        max_sum += 1. / pow(2., float(i)) * float((i+1) * AO_STEPSIZE);
+    for (int i = 0; i < AO_STEP; i++) {
+        vec3 p = pos + normal * float((i + 1) * AO_STEPSIZE);
+        sum += 1. / pow(2., float(i)) * distance_scene(pos).d;
+        max_sum += 1. / pow(2., float(i)) * float((i + 1) * AO_STEPSIZE);
     }
     return sum / max_sum;
 }
