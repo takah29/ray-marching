@@ -1,6 +1,7 @@
 #iUniform float ring_size = 3.0 in{0.0, 20.0 }
 #iUniform float speed = 1.0 in{0.1, 10.0 }
 #iUniform float morphing = 0.0 in {0.0, 1.0}
+#iUniform float sparseness = 0.4 in {0.4, 1.6}
 
 precision mediump float;
 uniform float time;
@@ -30,13 +31,14 @@ Plane plane = Plane(vec3(0.0, -2.0, 0.0), vec3(0.0, 1.0, 0.0));
 
 HitPoint distance_scene(in vec3 p) {
     vec3 q = rotate_z(rotate_x(rotate_y(p, time * speed * 0.5), time * speed * 0.2), 0.1);
-    float d1 = distance_func(box, repetition(q, vec3(0.0), vec3(0.4)));
+    float d1 = distance_func(box, repetition(q, vec3(0.0), vec3(sparseness)));
     torus.radius_a = ring_size;
     float d2 = distance_func(torus, q);
 
     float d3 = distance_func(plane, p);
 
-    float d = mix(d2, d1, pow(sin(time * 1.0) * 0.99, 2.0));
+    // float d = mix(d2, d1, pow(sin(time * 1.0) * 0.99, 2.0));
+    float d = mix(d2, d1, morphing);
     return smooth_union(HitPoint(d, vec4(BLUE, 1.0)), HitPoint(d3, vec4(MAGENTA, 1.0)), 0.5);
 }
 
@@ -53,7 +55,7 @@ float gen_shadow(vec3 ro, vec3 rd) {
     float c = 0.001;
     float r = 1.0;
     float shadow_coef = 0.5;
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < ITER/4; i++) {
         h = distance_scene(ro + rd * c).d;
         if (abs(h) < 0.001) {
             return shadow_coef;
