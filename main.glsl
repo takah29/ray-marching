@@ -1,4 +1,6 @@
-#iUniform float u = 1.0 in{0.0, 10.0 }
+#iUniform float ring_size = 3.0 in{0.0, 20.0 }
+#iUniform float speed = 1.0 in{0.1, 10.0 }
+#iUniform float morphing = 0.0 in {0.0, 1.0}
 
 precision mediump float;
 uniform float time;
@@ -7,6 +9,7 @@ uniform vec2 resolution;
 
 #include "object.glsl"
 #include "operation.glsl"
+#include "texture.glsl"
 #include "transform.glsl"
 
 const float PI = 3.14159265;
@@ -15,6 +18,10 @@ const float fov = angle * 0.5 * PI / 180.0;
 
 const vec3 light = vec3(0.577, 0.477, 0.177);
 
+const int ITER = 256;
+const int AO_STEP = 64;
+const int AO_STEPSIZE = 64;
+
 // オブジェクト
 Sphere sphere = Sphere(vec3(0.0, 0.0, 0.0), 3.0);
 Box box = Box(vec3(0.0, 0.0, 0.0), vec3(0.06, 0.06, 0.06), 0.06);
@@ -22,15 +29,15 @@ Torus torus = Torus(vec3(0.0, 0.0, 0.0), 2.0, 1.0);
 Plane plane = Plane(vec3(0.0, -2.0, 0.0), vec3(0.0, 1.0, 0.0));
 
 HitPoint distance_scene(in vec3 p) {
-    vec3 q = rotate_z(rotate_x(rotate_y(p, time * 0.5), time * 0.2), 0.1);
+    vec3 q = rotate_z(rotate_x(rotate_y(p, time * speed * 0.5), time * speed * 0.2), 0.1);
     float d1 = distance_func(box, repetition(q, vec3(0.0), vec3(0.4)));
-    torus.radius_a = u;
+    torus.radius_a = ring_size;
     float d2 = distance_func(torus, q);
 
     float d3 = distance_func(plane, p);
 
     float d = mix(d2, d1, pow(sin(time * 1.0) * 0.99, 2.0));
-    return smooth_union(HitPoint(d, vec4(BLUE, 1.0)), HitPoint(d3, vec4(GREEN, 0.0)), 0.5);
+    return smooth_union(HitPoint(d, vec4(BLUE, 1.0)), HitPoint(d3, vec4(MAGENTA, 1.0)), 0.5);
 }
 
 // シーンの法線ベクトルの計算
@@ -57,6 +64,19 @@ float gen_shadow(vec3 ro, vec3 rd) {
     return 1.0 - shadow_coef + r * shadow_coef;
 }
 
+float ambient_occlusion (in vec3 pos, in vec3 normal)
+{
+    float sum = 0.0;
+    float max_sum = 0.0;
+    for (int i = 0; i < AO_STEP; i ++)
+    {
+        vec3 p = pos + normal * float((i+1) * AO_STEPSIZE);
+        sum    += 1. / pow(2., float(i)) * distance_scene(pos).d;
+        max_sum += 1. / pow(2., float(i)) * float((i+1) * AO_STEPSIZE);
+    }
+    return sum / max_sum;
+}
+
 vec3 ray_march(vec3 p, in vec3 ray) {
     float distance = 0.0;
     float len = 0.0;
@@ -66,7 +86,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
     // marching loop
     float shadow = 1.0;
     HitPoint hp;
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < ITER; i++) {
         hp = distance_scene(pos);
         len += hp.d;
         pos = p + ray * len;
@@ -78,12 +98,16 @@ vec3 ray_march(vec3 p, in vec3 ray) {
             // light
             vec3 halfLE = normalize(light - ray);
             vec3 diff = clamp(dot(light, normal), 0.1, 1.0) * hp.mtl.xyz;
-            float spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 50.0) * hp.mtl.w;
+            float spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 500.0) * hp.mtl.w;
 
             // shadow
             shadow = gen_shadow(pos + normal * 0.001, light);
 
             color = vec3(diff) + vec3(spec);
+
+            // float ao = ambient_occlusion(pos, normal);
+            // color *= ao;
+
             break;
         }
     }
