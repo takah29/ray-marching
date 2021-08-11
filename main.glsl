@@ -10,18 +10,15 @@ uniform vec2 resolution;
 
 #include "object.glsl"
 #include "operation.glsl"
-#include "texture.glsl"
 #include "transform.glsl"
 
 const float PI = 3.14159265;
 const float angle = 60.0;
 const float fov = angle * 0.5 * PI / 180.0;
 
-const vec3 light = vec3(0.577, 0.477, 0.177);
+const vec3 light = vec3(0.577, 0.577, 0.577);
 
-const int ITER = 256;
-const int AO_STEP = 64;
-const int AO_STEPSIZE = 64;
+const int ITER = 128;
 
 // オブジェクト
 Sphere sphere = Sphere(vec3(0.0, 0.0, 0.0), 3.0);
@@ -37,9 +34,9 @@ HitPoint distance_scene(in vec3 p) {
 
     float d3 = distance_func(plane, p);
 
-    // float d = mix(d2, d1, pow(sin(time * 1.0) * 0.99, 2.0));
+    // float d = mix(d2, d1, (-cos(time * 2.0) + 1.0) * 0.99 / 2.0);
     float d = mix(d2, d1, morphing);
-    return smooth_union(HitPoint(d, vec4(BLUE, 1.0)), HitPoint(d3, vec4(MAGENTA, 1.0)), 0.5);
+    return smooth_union(HitPoint(d, vec4(BLUE+0.5, 1.0)), HitPoint(d3, vec4(CYAN + 0.5, 1.0)), 0.5);
 }
 
 // シーンの法線ベクトルの計算
@@ -50,33 +47,33 @@ vec3 get_normal(in vec3 p) {
                           distance_scene(p + vec3(0.0, 0.0, d)).d - distance_scene(p + vec3(0.0, 0.0, -d)).d));
 }
 
-float gen_shadow(vec3 ro, vec3 rd) {
+float cast_shadow(vec3 ro, vec3 rd) {
     float h = 0.0;
     float c = 0.001;
     float r = 1.0;
     float shadow_coef = 0.5;
-    for (int i = 0; i < ITER/4; i++) {
+    for (int i = 0; i < ITER/2; i++) {
         h = distance_scene(ro + rd * c).d;
         if (abs(h) < 0.001) {
             return shadow_coef;
         }
-        r = min(r, h * 32.0 / c);
+        r = min(r, h * 16.0 / c);
         c += h;
     }
     return 1.0 - shadow_coef + r * shadow_coef;
 }
 
-float ambient_occlusion (in vec3 pos, in vec3 normal)
-{
-    float sum = 0.0;
-    float max_sum = 0.0;
-    for (int i = 0; i < AO_STEP; i ++)
-    {
-        vec3 p = pos + normal * float((i+1) * AO_STEPSIZE);
-        sum    += 1. / pow(2., float(i)) * distance_scene(pos).d;
-        max_sum += 1. / pow(2., float(i)) * float((i+1) * AO_STEPSIZE);
+float ambient_occlusion(in vec3 pos, in vec3 normal) {
+    float ao = 0.0;
+    float amp = 0.5;
+    float distance = 0.02;
+    for (int i = 0; i < 6; i++) {
+        pos = pos + distance * normal;
+        ao += amp * clamp(distance_scene(pos).d / distance, 0.0, 1.0);
+        amp *= 0.5;
+        distance += 0.02;
     }
-    return sum / max_sum;
+    return ao;
 }
 
 vec3 ray_march(vec3 p, in vec3 ray) {
@@ -86,7 +83,6 @@ vec3 ray_march(vec3 p, in vec3 ray) {
     vec3 color = vec3(0.0);
 
     // marching loop
-    float shadow = 1.0;
     HitPoint hp;
     for (int i = 0; i < ITER; i++) {
         hp = distance_scene(pos);
@@ -101,24 +97,25 @@ vec3 ray_march(vec3 p, in vec3 ray) {
             vec3 halfLE = normalize(light - ray);
             vec3 diff = clamp(dot(light, normal), 0.1, 1.0) * hp.mtl.xyz;
             float spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 500.0) * hp.mtl.w;
-
-            // shadow
-            shadow = gen_shadow(pos + normal * 0.001, light);
-
             color = vec3(diff) + vec3(spec);
 
-            // float ao = ambient_occlusion(pos, normal);
-            // color *= ao;
+            // shadow
+            float shadow = cast_shadow(pos + normal * 0.001, light);
+
+            // ambient occulusion
+            float ao = ambient_occlusion(pos, normal);
+
+            color = color * shadow * ao;
 
             break;
         }
     }
 
-    return color * max(0.5, shadow);
+    return color;
 }
 
 void main(void) {
-    // fragment position
+    // fragment pos
     vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
 
     // camera
