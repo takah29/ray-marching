@@ -23,7 +23,7 @@ struct Plane {
 };
 float distance_func(in Plane plane, in vec3 p) { return dot(p - plane.center, plane.normal); }
 
-// torus
+// Torus
 struct Torus {
     vec3 center;
     float radius_a;
@@ -34,7 +34,7 @@ float distance_func(in Torus torus, in vec3 p) {
     return length(q) - torus.radius_b;
 }
 
-// capsule
+// Capsule
 struct Capsule {
     vec3 a;
     vec3 b;
