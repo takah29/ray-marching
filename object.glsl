@@ -63,3 +63,24 @@ float distance_func(in RecursiveTetrahedron rt, in vec3 p) {
     }
     return (length(z.xyz) - 1.5) / z.w;
 }
+
+// MengerSponge
+struct MengerSponge {
+    vec3 offset;
+    float scale;
+    int iterations;
+};
+float distance_func(in MengerSponge ms, in vec3 p) {
+    vec4 z = vec4(p, 1.0);
+    for (int i = 0; i < ms.iterations; i++) {
+        z = abs(z);
+        if (z.x < z.z) z.xz = z.zx;
+        if (z.y < z.z) z.yz = z.zy;
+        z *= ms.scale;
+        z.xyz -= ms.offset * (ms.scale - 1.0);
+        if (z.z < -0.5 * ms.offset.z * (ms.scale - 1.0)) {
+            z.z += ms.offset.z * (ms.scale - 1.0);
+        }
+    }
+    return (length(max(abs(z.xyz) - vec3(1.0, 1.0, 1.0), 0.0))) / z.w;
+}
