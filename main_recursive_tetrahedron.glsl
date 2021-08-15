@@ -25,13 +25,13 @@ HitPoint distance_scene(in vec3 p) {
     // オブジェクトの回転
     vec3 q = rotate_z(rotate_x(rotate_y(p, time * speed * 0.5), time * speed * 0.2), 0.1);
 
-    rt.iteration = rt_iter;
+    rt.iterations = rt_iter;
     float d = distance_func(rt, q/ 2.0);
 
     // フロア
     float d3 = distance_func(plane, p);
 
-    return smooth_union(HitPoint(d, vec4(RED + 0.5, 1.0)), HitPoint(d3, vec4(BLUE + 0.5, 1.0)), 0.5);
+    return smooth_union(HitPoint(d, vec4(RED + 0.5, 1.0)), HitPoint(d3, vec4(BLUE + 0.5, 1.0)), 0.2);
 }
 
 // シーンの法線ベクトルの計算

@@ -47,14 +47,14 @@ float distance_func(in Capsule capsule, in vec3 p) {
 }
 
 // RecursiveTetrahedron
-struct RecursiveTetrahedron{
+struct RecursiveTetrahedron {
     vec3 offset;
     float scale;
-    int iteration;
+    int iterations;
 };
 float distance_func(in RecursiveTetrahedron rt, in vec3 p) {
     vec4 z = vec4(p, 1.0);
-    for (int i = 0; i < rt.iteration; i++) {
+    for (int i = 0; i < rt.iterations; i++) {
         if (z.x + z.y < 0.0) z.xy = -z.yx;
         if (z.x + z.z < 0.0) z.xz = -z.zx;
         if (z.y + z.z < 0.0) z.zy = -z.yz;
