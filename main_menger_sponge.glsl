@@ -23,7 +23,7 @@ Plane plane = Plane(vec3(0.0, -2.0, 0.0), vec3(0.0, 1.0, 0.0));
 
 HitPoint distance_scene(in vec3 p) {
     // オブジェクトの回転
-    vec3 q = rotate_z(rotate_x(rotate_y(p, time * speed * 0.5), time * speed * 0.2), 0.1);
+    vec3 q = rotate_z(rotate_x(rotate_y(p, time * speed * 0.5), time * speed * 0.2), time * speed * 0.1);
 
     ms.iterations = ms_iter;
     float d = distance_func(ms, q / 2.0);

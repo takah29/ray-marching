@@ -23,10 +23,10 @@ Plane plane = Plane(vec3(0.0, -2.0, 0.0), vec3(0.0, 1.0, 0.0));
 
 HitPoint distance_scene(in vec3 p) {
     // オブジェクトの回転
-    vec3 q = rotate_z(rotate_x(rotate_y(p, time * speed * 0.5), time * speed * 0.2), 0.1);
+    vec3 q = rotate_z(rotate_x(rotate_y(p, time * speed * 0.5), time * speed * 0.2), time * speed * 0.1);
 
     rt.iterations = rt_iter;
-    float d = distance_func(rt, q/ 2.0);
+    float d = distance_func(rt, q / 2.0);
 
     // フロア
     float d3 = distance_func(plane, p);

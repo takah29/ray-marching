@@ -27,7 +27,7 @@ Torus torus = Torus(vec3(0.0, 0.0, 0.0), 2.0, 1.0);
 Plane plane = Plane(vec3(0.0, -2.0, 0.0), vec3(0.0, 1.0, 0.0));
 
 HitPoint distance_scene(in vec3 p) {
-    vec3 q = rotate_z(rotate_x(rotate_y(p, time * speed * 0.5), time * speed * 0.2), 0.1);
+    vec3 q = rotate_z(rotate_x(rotate_y(p, time * speed * 0.5), time * speed * 0.2), time * speed * 0.1);
     float d1 = distance_func(box, repetition(q, vec3(0.0), vec3(sparseness)));
     torus.radius_a = ring_size;
     float d2 = distance_func(torus, q);
