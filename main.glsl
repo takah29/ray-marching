@@ -36,7 +36,7 @@ HitPoint distance_scene(in vec3 p) {
 
     // float d = mix(d2, d1, (-cos(time * 2.0) + 1.0) * 0.99 / 2.0);
     float d = mix(d2, d1, morphing);
-    return smooth_union(HitPoint(d, vec4(BLUE+0.5, 1.0)), HitPoint(d3, vec4(CYAN + 0.5, 1.0)), 0.5);
+    return smooth_union(HitPoint(d, vec4(RED + 0.5, 1.0)), HitPoint(d3, vec4(BLUE + 0.5, 1.0)), 0.5);
 }
 
 // シーンの法線ベクトルの計算
@@ -52,7 +52,7 @@ float cast_shadow(vec3 ro, vec3 rd) {
     float c = 0.001;
     float r = 1.0;
     float shadow_coef = 0.5;
-    for (int i = 0; i < ITER/2; i++) {
+    for (int i = 0; i < ITER / 4; i++) {
         h = distance_scene(ro + rd * c).d;
         if (abs(h) < 0.001) {
             return shadow_coef;
@@ -90,17 +90,18 @@ vec3 ray_march(vec3 p, in vec3 ray) {
         pos = p + ray * len;
 
         // hit check
-        if (abs(hp.d) < 0.001) {
+        if (abs(hp.d) < 0.0001) {
             vec3 normal = get_normal(pos);
 
             // light
             vec3 halfLE = normalize(light - ray);
+
             vec3 diff = clamp(dot(light, normal), 0.1, 1.0) * hp.mtl.xyz;
             float spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 500.0) * hp.mtl.w;
             color = vec3(diff) + vec3(spec);
 
             // shadow
-            float shadow = cast_shadow(pos + normal * 0.001, light);
+            float shadow = cast_shadow(pos + normal * 0.01, light);
 
             // ambient occulusion
             float ao = ambient_occlusion(pos, normal);
