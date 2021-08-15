@@ -45,3 +45,21 @@ float distance_func(in Capsule capsule, in vec3 p) {
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
     return length(pa - ba * h) - capsule.radius;
 }
+
+// RecursiveTetrahedron
+struct RecursiveTetrahedron{
+    vec3 offset;
+    float scale;
+    int iteration;
+};
+float distance_func(in RecursiveTetrahedron rt, in vec3 p) {
+    vec4 z = vec4(p, 1.0);
+    for (int i = 0; i < rt.iteration; i++) {
+        if (z.x + z.y < 0.0) z.xy = -z.yx;
+        if (z.x + z.z < 0.0) z.xz = -z.zx;
+        if (z.y + z.z < 0.0) z.zy = -z.yz;
+        z *= rt.scale;
+        z.xyz -= rt.offset * (rt.scale - 1.0);
+    }
+    return (length(z.xyz) - 1.5) / z.w;
+}
