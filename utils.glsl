@@ -5,6 +5,7 @@ vec3 CYAN = vec3(0.0, 1.0, 1.0);
 vec3 MAGENTA = vec3(1.0, 0.0, 1.0);
 vec3 YELLOW = vec3(1.0, 1.0, 0.0);
 vec3 WHITE = vec3(1.0, 1.0, 1.0);
+vec3 GRAY = vec3(0.5, 0.5, 0.5);
 vec3 BLACK = vec3(0.0, 0.0, 0.0);
 
 struct HitPoint {
