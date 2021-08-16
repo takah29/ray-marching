@@ -47,20 +47,16 @@ vec3 get_normal(in vec3 p) {
                           distance_scene(p + vec3(0.0, 0.0, d)).d - distance_scene(p + vec3(0.0, 0.0, -d)).d));
 }
 
-float cast_shadow(vec3 ro, vec3 rd) {
-    float h = 0.0;
-    float c = 0.001;
-    float r = 1.0;
-    float shadow_coef = 0.5;
-    for (int i = 0; i < ITER / 4; i++) {
-        h = distance_scene(ro + rd * c).d;
-        if (abs(h) < 0.001) {
-            return shadow_coef;
-        }
-        r = min(r, h * 16.0 / c);
-        c += h;
+float soft_shadow(in vec3 ro, in vec3 rd, in float k) {
+    float res = 1.0;
+    float t = 0.0;
+    for (int i = 0; i < 64; i++) {
+        float h = distance_scene(ro + rd * t).d;
+        res = min(res, k * h / t);
+        if (res < 0.001) break;
+        t += clamp(h, 0.01, 0.2);
     }
-    return 1.0 - shadow_coef + r * shadow_coef;
+    return clamp(res, 0.3, 1.0);
 }
 
 float ambient_occlusion(in vec3 pos, in vec3 normal) {
@@ -101,7 +97,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
             color = vec3(diff) + vec3(spec);
 
             // shadow
-            float shadow = cast_shadow(pos + normal * 0.01, light);
+            float shadow = soft_shadow(pos + normal * 0.01, light, 20.0);
 
             // ambient occulusion
             float ao = ambient_occlusion(pos, normal);
