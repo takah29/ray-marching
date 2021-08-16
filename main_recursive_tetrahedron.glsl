@@ -1,4 +1,5 @@
-#iUniform float speed = 1.0 in{0.1, 10.0 }
+#iUniform float angle = 60.0 in{30.0, 90.0 }
+#iUniform float speed = 0.1 in{0.0, 4.0 }
 #iUniform int rt_iter = 8 in{0, 10 }
 
 precision mediump float;
@@ -11,9 +12,6 @@ uniform vec2 resolution;
 #include "transform.glsl"
 
 const float PI = 3.14159265;
-const float angle = 60.0;
-const float fov = angle * 0.5 * PI / 180.0;
-
 const vec3 light = vec3(0.577, 0.577, 0.577);
 
 const int ITER = 256;
@@ -114,6 +112,7 @@ void main(void) {
     vec3 c_pos = vec3(0.0, 0.0, 8.0);
 
     // ray
+    float fov = angle * 0.5 * PI / 180.0;
     vec3 ray = normalize(vec3(sin(fov) * p.x, sin(fov) * p.y, -cos(fov)));
 
     vec3 color = ray_march(c_pos, ray);
