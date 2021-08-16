@@ -174,3 +174,35 @@ vec3 trap_to_color(in vec4 trap) {
     color *= 5.0;
     return color;
 }
+
+// Juliabulb
+float distance_func_jb_tri(in Mandelbulb mb, in vec3 p, in vec3 c, out vec4 res_color) {
+    vec3 z = p;
+    float m = dot(z, z);
+
+    vec4 trap = vec4(abs(z), m);
+    float dz = 1.0;
+
+    for (int i = 0; i < mb.iterations; i++) {
+        // size of the derivative of z (comp through the chain rule)
+        // dz = 8*z^7*dz
+        dz = 8.0 * pow(m, 3.5) * dz;
+
+        // z = z^8+z
+        float r = length(z);
+        float b = mb.power * acos(clamp(z.y / r, -1.0, 1.0));
+        float a = mb.power * atan(z.x, z.z);
+        z = c + pow(r, 8.0) * vec3(sin(b) * sin(a), cos(b), sin(b) * cos(a));
+
+        // orbit trapping
+        trap = min(trap, vec4(abs(z), m));
+
+        m = dot(z, z);
+        if (m > 2.0) break;
+    }
+
+    res_color = trap;
+
+    // distance estimation (through the Hubbard-Douady potential)
+    return 0.25 * log(m) * sqrt(m) / dz;
+}
