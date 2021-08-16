@@ -86,7 +86,7 @@ float distance_func(in MengerSponge ms, in vec3 p) {
 }
 
 // HexTiling
-struct HexTiling{
+struct HexTiling {
     float y_pos;
     float radius;
     float scale;
@@ -108,4 +108,69 @@ float distance_func(in HexTiling ht, in vec3 p) {
     float d2 = length(p2 - vec2(clamp(p2.x, -k.y * h, k.y * h), h)) * sign(p2.y - h);
 
     return max(min(d1, d2), p.y - ht.y_pos);
+}
+
+// Mandelbulb
+struct Mandelbulb {
+    float power;
+    int iterations;
+};
+float distance_func_mb_simple(in Mandelbulb mb, in vec3 p) {
+    vec3 z = p;
+    float dr = 1.0;
+    float r;
+    for (int i = 0; i < mb.iterations; i++) {
+        r = length(z);
+        if (r > 10.0) break;
+        float theta = acos(z.y / r);
+        float phi = atan(z.z, z.x);
+        dr = pow(r, mb.power - 1.0) * mb.power * dr + 1.0;
+
+        float zr = pow(r, mb.power);
+        theta = theta * mb.power;
+        phi = phi * mb.power;
+
+        z = zr * vec3(sin(theta) * cos(phi), cos(theta), sin(theta) * sin(phi));
+        z += p;
+    }
+    return 0.5 * log(r) * r / dr;
+}
+float distance_func_mb_tri(in Mandelbulb mb, in vec3 p, out vec4 resColor) {
+    vec3 w = p;
+    float m = dot(w, w);
+
+    vec4 trap = vec4(abs(w), m);
+    float dz = 1.0;
+
+    for (int i = 0; i < mb.iterations; i++) {
+        // trigonometric version
+
+        // dz = 8*z^7*dz
+        dz = 8.0 * pow(m, 3.5) * dz + 1.0;
+        // dz = 8.0*pow(sqrt(m),7.0)*dz + 1.0;
+
+        // z = z^8+z
+        float r = length(w);
+        float b = mb.power * acos(w.y / r);
+        float a = mb.power * atan(w.x, w.z);
+        w = p + pow(r, 8.0) * vec3(sin(b) * sin(a), cos(b), sin(b) * cos(a));
+
+        trap = min(trap, vec4(abs(w), m));
+
+        m = dot(w, w);
+        if (m > 256.0) break;
+    }
+
+    resColor = vec4(m, trap.yzw);
+
+    // distance estimation (through the Hubbard-Douady potential)
+    return 0.25 * log(m) * sqrt(m) / dz;
+}
+vec3 trap_to_color(in vec4 trap) {
+    vec3 color = vec3(0.01);
+    color = mix(color, vec3(0.30, 0.20, 0.10), clamp(trap.y, 0.0, 1.0));
+    color = mix(color, vec3(0.32, 0.20, 0.00), clamp(trap.z * trap.z, 0.0, 1.0));
+    color = mix(color, vec3(0.10, 0.20, 0.02), clamp(pow(trap.w, 6.0), 0.0, 1.0));
+    color *= 5.0;
+    return color;
 }
