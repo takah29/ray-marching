@@ -135,7 +135,7 @@ float distance_func_mb_simple(in Mandelbulb mb, in vec3 p) {
     }
     return 0.5 * log(r) * r / dr;
 }
-float distance_func_mb_tri(in Mandelbulb mb, in vec3 p, out vec4 resColor) {
+float distance_func_mb_tri(in Mandelbulb mb, in vec3 p, out vec4 res_color) {
     vec3 w = p;
     float m = dot(w, w);
 
@@ -161,7 +161,7 @@ float distance_func_mb_tri(in Mandelbulb mb, in vec3 p, out vec4 resColor) {
         if (m > 256.0) break;
     }
 
-    resColor = vec4(m, trap.yzw);
+    res_color = vec4(m, trap.yzw);
 
     // distance estimation (through the Hubbard-Douady potential)
     return 0.25 * log(m) * sqrt(m) / dz;
