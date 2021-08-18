@@ -78,7 +78,8 @@ vec3 ray_march(vec3 p, in vec3 ray) {
 
     // marching loop
     HitPoint hp;
-    for (int i = 0; i < ITER; i++) {
+    int s;
+    for (s = 0; s < ITER; s++) {
         hp = distance_scene(pos);
         len += hp.d;
         pos = p + ray * len;
@@ -106,7 +107,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
         }
     }
 
-    return color;
+    return color * (1.0 - float(s + 1) / float(ITER));
 }
 
 void main(void) {

@@ -12,7 +12,7 @@ uniform vec2 resolution;
 #include "transform.glsl"
 
 const float PI = 3.14159265;
-const vec3 light = vec3(0.6, 0.6, 0.6);
+const vec3 light = vec3(0.6, 0.5, 0.5);
 
 const int ITER = 256;
 
@@ -36,7 +36,7 @@ HitPoint distance_scene(in vec3 p) {
     // フロア
     float d3 = distance_func(plane, p);
 
-    return smooth_union(HitPoint(d, vec4(col, 0.8)), HitPoint(d3, vec4(BLUE + 0.5, 1.0)), 0.3);
+    return smooth_union(HitPoint(d, vec4(col, 0.8)), HitPoint(d3, vec4(BLUE + 0.5, 1.0)), 0.2);
 }
 
 // シーンの法線ベクトルの計算
@@ -67,7 +67,8 @@ vec3 ray_march(vec3 p, in vec3 ray) {
 
     // marching loop
     HitPoint hp;
-    for (int i = 0; i < ITER; i++) {
+    int s;
+    for (s = 0; s < ITER; s++) {
         hp = distance_scene(pos);
         len += hp.d;
         pos = p + ray * len;
@@ -79,7 +80,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
             // light
             vec3 halfLE = normalize(light - ray);
 
-            vec3 diff = clamp(dot(light, normal), 0.1, 1.0) * hp.mtl.xyz;
+            vec3 diff = clamp(dot(light, normal), 0.1, 1.0) * hp.mtl.xyz * 1.2;
             float spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 500.0) * hp.mtl.w;
             color = vec3(diff) + vec3(spec);
 
@@ -92,7 +93,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
         }
     }
 
-    return color;
+    return color * (1.0 - float(s + 1) / float(ITER));
 }
 
 void main(void) {
