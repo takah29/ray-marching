@@ -168,9 +168,9 @@ float distance_func_mb_tri(in Mandelbulb mb, in vec3 p, out vec4 res_color) {
 }
 vec3 trap_to_color(in vec4 trap) {
     vec3 color = vec3(0.01);
-    color = mix(color, vec3(0.30, 0.20, 0.10), clamp(trap.y, 0.0, 1.0));
-    color = mix(color, vec3(0.32, 0.20, 0.00), clamp(trap.z * trap.z, 0.0, 1.0));
-    color = mix(color, vec3(0.10, 0.20, 0.02), clamp(pow(trap.w, 6.0), 0.0, 1.0));
+    color = mix(color, vec3(0.2, 0.2, 0.0), clamp(trap.y, 0.0, 1.0));
+    color = mix(color, vec3(0.2, 0.1, 0.1), clamp(trap.z * trap.z, 0.0, 1.0));
+    color = mix(color, vec3(0.2, 0.4, 0.1), clamp(pow(trap.w, 6.0), 0.0, 1.0));
     color *= 5.0;
     return color;
 }
