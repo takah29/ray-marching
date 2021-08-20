@@ -1,4 +1,4 @@
-#iUniform float angle = 60.0 in{30.0, 90.0 }
+#iUniform float angle = 65.0 in{30.0, 90.0 }
 #iUniform float speed = 0.1 in{0.0, 4.0 }
 #iUniform float power = 8.0 in{1.0, 20.0 }
 
@@ -12,9 +12,13 @@ uniform vec2 resolution;
 #include "transform.glsl"
 
 const float PI = 3.14159265;
+const int ITER = 128;
 const vec3 light = vec3(0.6, 0.5, 0.5);
 
-const int ITER = 256;
+// Mandelbulbの色定義
+const vec3 lowcol = vec3(0.3, 0.2, 0.0);
+const vec3 middlecol = vec3(0.3, 0.2, 0.1);
+const vec3 highcol = vec3(0.2, 0.5, 0.1);
 
 Mandelbulb mb = Mandelbulb(8.0, 4);
 Plane plane = Plane(vec3(0.0, -2.0, 0.0), vec3(0.0, 1.0, 0.0));
@@ -30,13 +34,14 @@ HitPoint distance_scene(in vec3 p) {
 
     vec4 trap;
     mb.power = power;
-    float d = distance_func_jb_tri(mb, q / 4.0, cc, trap);
-    vec3 col = trap_to_color(trap);
+    float d = distance_func_juliabulb(mb, q / 4.0, cc, trap);
+
+    vec3 col = trap_to_color(trap, lowcol, middlecol, highcol);
 
     // フロア
     float d3 = distance_func(plane, p);
 
-    return smooth_union(HitPoint(d, vec4(col, 0.8)), HitPoint(d3, vec4(BLUE + 0.5, 1.0)), 0.2);
+    return smooth_union(HitPoint(d, vec4(col, 1.0)), HitPoint(d3, vec4(BLUE + 0.5, 1.0)), 0.2);
 }
 
 // シーンの法線ベクトルの計算
@@ -50,7 +55,7 @@ vec3 get_normal(in vec3 pos) {
 float soft_shadow(in vec3 ro, in vec3 rd, in float k) {
     float res = 1.0;
     float t = 0.0;
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < 90; i++) {
         float h = distance_scene(ro + rd * t).d;
         res = min(res, k * h / t);
         if (res < 0.001) break;
@@ -60,37 +65,55 @@ float soft_shadow(in vec3 ro, in vec3 rd, in float k) {
 }
 
 vec3 ray_march(vec3 p, in vec3 ray) {
-    float distance = 0.0;
-    float len = 0.0;
     vec3 pos = p;  // レイの先端位置
     vec3 color = vec3(0.0);
+    float omega = 1.9;
 
     // marching loop
     HitPoint hp;
     int s;
+    float prev_d = 0.0;
     for (s = 0; s < ITER; s++) {
         hp = distance_scene(pos);
-        len += hp.d;
-        pos = p + ray * len;
+        pos = pos + ray * hp.d * omega;
 
         // hit check
-        if (abs(hp.d) < 0.001) {
+        if (abs(hp.d) < 0.0005) {
             vec3 normal = get_normal(pos);
 
-            // light
-            vec3 halfLE = normalize(light - ray);
+            // point light
+            vec3 point_light = 10.0 * vec3(cos(time * 3.0), 0.2, sin(time * 3.0));
+            vec3 rd = normalize(point_light - pos);
+            vec3 halfLE = normalize(rd - ray);
 
-            vec3 diff = clamp(dot(light, normal), 0.1, 1.0) * hp.mtl.xyz * 1.2;
-            float spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 500.0) * hp.mtl.w;
-            color = vec3(diff) + vec3(spec);
+            vec3 diff = clamp(dot(rd, normal), 0.1, 1.0) * hp.mtl.xyz * 1.5;
+            float spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 100.0) * hp.mtl.w;
+            color += vec3(diff) + vec3(spec);
 
-            // shadow
-            float shadow = soft_shadow(pos + normal * 0.01, light, 20.0);
+            float shadow = soft_shadow(pos + normal * 0.01, rd, 30.0);
 
-            color = color * shadow;
+            color *= shadow;
+
+            // directional light
+            rd = normalize(light);
+            halfLE = normalize(rd - ray);
+
+            diff = clamp(dot(rd, normal), 0.1, 1.0) * hp.mtl.xyz;
+            spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 100.0) * hp.mtl.w;
+            color += vec3(diff) + vec3(spec);
+
+            shadow = soft_shadow(pos + normal * 0.01, rd, 20.0);
+
+            color *= shadow;
 
             break;
         }
+
+        // fallback
+        if (abs(prev_d) + abs(hp.d) < hp.d * omega) {
+            pos = pos + ray * hp.d * (1.0 - omega);
+        }
+        prev_d = hp.d;
     }
 
     return color * (1.0 - float(s + 1) / float(ITER));

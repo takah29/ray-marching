@@ -13,8 +13,12 @@ uniform vec2 resolution;
 
 const float PI = 3.14159265;
 const vec3 light = vec3(0.577, 0.577, 0.577);
-
 const int ITER = 256;
+
+// Mandelbulbの色定義
+const vec3 lowcol = vec3(0.3, 0.2, 0.0);
+const vec3 middlecol = vec3(0.3, 0.2, 0.1);
+const vec3 highcol = vec3(0.2, 0.5, 0.1);
 
 Mandelbulb mb = Mandelbulb(8.0, 12);
 Plane plane = Plane(vec3(0.0, -2.0, 0.0), vec3(0.0, 1.0, 0.0));
@@ -25,13 +29,13 @@ HitPoint distance_scene(in vec3 p) {
 
     vec4 trap;
     mb.power = power;
-    float d = distance_func_mb_tri(mb, q / 4.0, trap);
-    vec3 col = trap_to_color(trap);
+    float d = distance_func_mandelbulb(mb, q / 4.0, trap);
+    vec3 col = trap_to_color(trap, lowcol, middlecol, highcol);
 
     // フロア
     float d3 = distance_func(plane, p);
 
-    return smooth_union(HitPoint(d, vec4(col, 0.8)), HitPoint(d3, vec4(BLUE + 0.5, 1.0)), 0.5);
+    return smooth_union(HitPoint(d, vec4(col, 0.8)), HitPoint(d3, vec4(BLUE + 0.5, 1.0)), 0.2);
 }
 
 // シーンの法線ベクトルの計算

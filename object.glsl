@@ -135,7 +135,7 @@ float distance_func_mb_simple(in Mandelbulb mb, in vec3 p) {
     }
     return 0.5 * log(r) * r / dr;
 }
-float distance_func_mb_tri(in Mandelbulb mb, in vec3 p, out vec4 res_color) {
+float distance_func_mandelbulb(in Mandelbulb mb, in vec3 p, out vec4 res_color) {
     vec3 w = p;
     float m = dot(w, w);
 
@@ -166,25 +166,23 @@ float distance_func_mb_tri(in Mandelbulb mb, in vec3 p, out vec4 res_color) {
     // distance estimation (through the Hubbard-Douady potential)
     return 0.25 * log(m) * sqrt(m) / dz;
 }
-vec3 trap_to_color(in vec4 trap) {
+vec3 trap_to_color(in vec4 trap, in vec3 lowcol, in vec3 middlecol, in vec3 highcol) {
     vec3 color = vec3(0.01);
-    color = mix(color, vec3(0.2, 0.2, 0.0), clamp(trap.y, 0.0, 1.0));
-    color = mix(color, vec3(0.2, 0.1, 0.1), clamp(trap.z * trap.z, 0.0, 1.0));
-    color = mix(color, vec3(0.2, 0.4, 0.1), clamp(pow(trap.w, 6.0), 0.0, 1.0));
+    color = mix(color, lowcol, clamp(trap.y, 0.0, 1.0));
+    color = mix(color, middlecol, clamp(trap.z * trap.z, 0.0, 1.0));
+    color = mix(color, highcol, clamp(pow(trap.w, 6.0), 0.0, 1.0));
     color *= 5.0;
     return color;
 }
 
 // Juliabulb
-float distance_func_jb_tri(in Mandelbulb mb, in vec3 p, in vec3 c, out vec4 res_color) {
+float distance_func_juliabulb(in Mandelbulb mb, in vec3 p, in vec3 c, out vec4 res_color) {
     vec3 z = p;
     float m = dot(z, z);
-
     vec4 trap = vec4(abs(z), m);
     float dz = 1.0;
 
     for (int i = 0; i < mb.iterations; i++) {
-        // size of the derivative of z (comp through the chain rule)
         // dz = 8*z^7*dz
         dz = 8.0 * pow(m, 3.5) * dz;
 
@@ -192,17 +190,17 @@ float distance_func_jb_tri(in Mandelbulb mb, in vec3 p, in vec3 c, out vec4 res_
         float r = length(z);
         float b = mb.power * acos(clamp(z.y / r, -1.0, 1.0));
         float a = mb.power * atan(z.x, z.z);
-        z = c + pow(r, 8.0) * vec3(sin(b) * sin(a), cos(b), sin(b) * cos(a));
+        z = pow(r, 8.0) * vec3(sin(b) * sin(a), cos(b), sin(b) * cos(a)) + c;
 
         // orbit trapping
         trap = min(trap, vec4(abs(z), m));
 
         m = dot(z, z);
-        if (m > 2.0) break;
+        if (m > 4.0) break;
     }
 
     res_color = trap;
 
-    // distance estimation (through the Hubbard-Douady potential)
-    return 0.25 * log(m) * sqrt(m) / dz;
+    float w = length(z);
+    return 0.5 * w * log(w) / dz;
 }
