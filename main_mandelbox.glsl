@@ -9,13 +9,14 @@ uniform float time;
 uniform vec2 mouse;
 uniform vec2 resolution;
 
-#include "lib/object.glsl"
 #include "lib/fractal.glsl"
+#include "lib/object.glsl"
 #include "lib/operation.glsl"
 #include "lib/transform.glsl"
 
 const float PI = 3.14159265;
 const int ITER = 256;
+const float MAX_RAY_LENGTH = 100.0;
 
 const vec3 light = vec3(0.577, 0.577, 0.577);
 
@@ -34,7 +35,7 @@ HitPoint distance_scene(in vec3 p) {
     float d1 = distance_estimate(mb, q * 2.0);
     float d2 = distance_func(plane, p);
 
-    return smooth_union(HitPoint(d1, vec4(WHITE, 1.0)), HitPoint(d2, vec4(BLUE + 0.5, 1.0)), 0.0);
+    return smooth_union(HitPoint(d1, vec4(YELLOW * 0.1 + 0.5, 1.0)), HitPoint(d2, vec4(BLUE + 0.5, 1.0)), 0.0);
 }
 
 // シーンの法線ベクトルの計算
@@ -64,8 +65,15 @@ vec3 ray_march(vec3 p, in vec3 ray) {
     // marching loop
     HitPoint hp;
     int s;
+    float len;
     for (s = 0; s < ITER; s++) {
         hp = distance_scene(pos);
+
+        len += hp.d;
+        if (len > MAX_RAY_LENGTH) {
+            break;
+        }
+
         pos = pos + ray * hp.d;
 
         // hit check
@@ -88,7 +96,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
         }
     }
 
-    return color * (1.0 - float(s + 1) / float(ITER));
+    return color * (1.0 - len / MAX_RAY_LENGTH);
 }
 
 void main(void) {

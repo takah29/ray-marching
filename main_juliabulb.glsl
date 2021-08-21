@@ -14,6 +14,7 @@ uniform vec2 resolution;
 
 const float PI = 3.14159265;
 const int ITER = 128;
+const float MAX_RAY_LENGTH = 30.0;
 const vec3 light = vec3(0.6, 0.5, 0.5);
 
 // Mandelbulbの色定義
@@ -73,9 +74,16 @@ vec3 ray_march(vec3 p, in vec3 ray) {
     // marching loop
     HitPoint hp;
     int s;
+    float len = 0.0;
     float prev_d = 0.0;
     for (s = 0; s < ITER; s++) {
         hp = distance_scene(pos);
+
+        len += hp.d;
+        if (len > MAX_RAY_LENGTH){
+            break;
+        }
+
         pos = pos + ray * hp.d * omega;
 
         // hit check
