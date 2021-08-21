@@ -204,3 +204,39 @@ float distance_func_juliabulb(in Mandelbulb mb, in vec3 p, in vec3 c, out vec4 r
     float w = length(z);
     return 0.5 * w * log(w) / dz;
 }
+
+// MandelBox
+struct MandelBox {
+    float scale;
+    float min_radius;
+    float fixed_radius;
+    int iterations;
+};
+float distance_func_mandelbox(in MandelBox mb, in vec3 p) {
+    vec3 z = p;
+    float dr = 1.0;
+    for (int i = 0; i < mb.iterations; i++) {
+        // Box Fold
+        float folding_limit = 1.0;
+        z = clamp(z, -folding_limit, folding_limit) * 2.0 - z;
+
+        // Sphere Fold
+        float m2 = mb.min_radius * mb.min_radius;
+        float f2 = mb.fixed_radius * mb.fixed_radius;
+        float r2 = dot(z, z);
+        if (r2 < m2) {
+            float temp = (f2 / m2);
+            z *= temp;
+            dr *= temp;
+        } else if (r2 < f2) {
+            float temp = (f2 / r2);
+            z *= temp;
+            dr *= temp;
+        }
+
+        z = mb.scale * z + p;
+        dr = dr * abs(mb.scale) + 1.0;
+    }
+    float r = length(z);
+    return r / abs(dr);
+}
