@@ -7,8 +7,8 @@ uniform float time;
 uniform vec2 mouse;
 uniform vec2 resolution;
 
-#include "lib/object.glsl"
 #include "lib/fractal.glsl"
+#include "lib/object.glsl"
 #include "lib/operation.glsl"
 #include "lib/transform.glsl"
 
@@ -41,14 +41,20 @@ vec3 get_normal(in vec3 pos) {
                      e.yxy * distance_scene(pos + e.yxy * ep).d + e.xxx * distance_scene(pos + e.xxx * ep).d);
 }
 
-float soft_shadow(in vec3 ro, in vec3 rd, in float k) {
+float soft_shadow(in vec3 p, in vec3 ray, in float k) {
+    vec3 pos = p;
     float res = 1.0;
-    float t = 0.0;
+    float len = 0.0;
     for (int i = 0; i < 64; i++) {
-        float h = distance_scene(ro + rd * t).d;
-        res = min(res, k * h / t);
-        if (res < 0.001) break;
-        t += clamp(h, 0.01, 0.2);
+        float d = distance_scene(pos).d;
+        res = min(res, k * d / len);
+
+        if (res < 0.001) {
+            break;
+        }
+
+        len += clamp(d, 0.01, 0.2);
+        pos = p + ray * len;
     }
     return clamp(res, 0.3, 1.0);
 }

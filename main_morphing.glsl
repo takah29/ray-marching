@@ -1,6 +1,6 @@
-#iUniform float ring_size = 3.0 in{0.0, 20.0 }
 #iUniform float angle = 60.0 in{30.0, 90.0 }
 #iUniform float speed = 0.1 in{0.0, 4.0 }
+#iUniform float ring_size = 3.0 in{0.0, 20.0 }
 #iUniform float morphing = 0.0 in{0.0, 1.0 }
 #iUniform float sparseness = 0.4 in{0.3, 2.0 }
 
@@ -38,21 +38,27 @@ HitPoint distance_scene(in vec3 p) {
 }
 
 // シーンの法線ベクトルの計算
-vec3 get_normal(in vec3 p) {
-    float d = 0.0001;
-    return normalize(vec3(distance_scene(p + vec3(d, 0.0, 0.0)).d - distance_scene(p + vec3(-d, 0.0, 0.0)).d,
-                          distance_scene(p + vec3(0.0, d, 0.0)).d - distance_scene(p + vec3(0.0, -d, 0.0)).d,
-                          distance_scene(p + vec3(0.0, 0.0, d)).d - distance_scene(p + vec3(0.0, 0.0, -d)).d));
+vec3 get_normal(in vec3 pos) {
+    const float ep = 0.001;
+    vec2 e = vec2(1.0, -1.0) * 0.5773;
+    return normalize(e.xyy * distance_scene(pos + e.xyy * ep).d + e.yyx * distance_scene(pos + e.yyx * ep).d +
+                     e.yxy * distance_scene(pos + e.yxy * ep).d + e.xxx * distance_scene(pos + e.xxx * ep).d);
 }
 
-float soft_shadow(in vec3 ro, in vec3 rd, in float k) {
+float soft_shadow(in vec3 p, in vec3 ray, in float k) {
+    vec3 pos = p;
     float res = 1.0;
-    float t = 0.0;
+    float len = 0.0;
     for (int i = 0; i < 64; i++) {
-        float h = distance_scene(ro + rd * t).d;
-        res = min(res, k * h / t);
-        if (res < 0.001) break;
-        t += clamp(h, 0.01, 0.2);
+        float d = distance_scene(pos).d;
+        res = min(res, k * d / len);
+
+        if (res < 0.001) {
+            break;
+        }
+
+        len += clamp(d, 0.01, 0.2);
+        pos = p + ray * len;
     }
     return clamp(res, 0.3, 1.0);
 }

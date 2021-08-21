@@ -1,6 +1,6 @@
 #iUniform float angle = 50.0 in{10.0, 90.0 }
 #iUniform float speed = 0.1 in{0.0, 4.0 }
-#iUniform float scale = 2.6 in{2.0, 3.4 }
+#iUniform float scale = 2.7 in{2.0, 3.4 }
 #iUniform float min_radius = 0.4 in{0.0, 1.0 }
 #iUniform float fixed_radius = 1.0 in{0.8, 1.4 }
 
@@ -46,14 +46,20 @@ vec3 get_normal(in vec3 pos) {
                      e.yxy * distance_scene(pos + e.yxy * ep).d + e.xxx * distance_scene(pos + e.xxx * ep).d);
 }
 
-float soft_shadow(in vec3 ro, in vec3 rd, in float k) {
+float soft_shadow(in vec3 p, in vec3 ray, in float k) {
+    vec3 pos = p;
     float res = 1.0;
-    float t = 0.0;
+    float len = 0.0;
     for (int i = 0; i < 80; i++) {
-        float h = distance_scene(ro + rd * t).d;
-        res = min(res, k * h / t);
-        if (res < 0.001) break;
-        t += clamp(h, 0.01, 0.2);
+        float d = distance_scene(pos).d;
+        res = min(res, k * d / len);
+
+        if (res < 0.001) {
+            break;
+        }
+
+        len += clamp(d, 0.01, 0.2);
+        pos = p + ray * len;
     }
     return clamp(res, 0.2, 1.0);
 }
