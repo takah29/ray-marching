@@ -9,9 +9,9 @@ uniform float time;
 uniform vec2 mouse;
 uniform vec2 resolution;
 
-#include "object.glsl"
-#include "operation.glsl"
-#include "transform.glsl"
+#include "lib/object.glsl"
+#include "lib/operation.glsl"
+#include "lib/transform.glsl"
 
 const float PI = 3.14159265;
 const vec3 light = vec3(0.577, 0.577, 0.577);
