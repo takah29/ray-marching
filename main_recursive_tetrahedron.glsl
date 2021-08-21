@@ -53,19 +53,6 @@ float soft_shadow(in vec3 ro, in vec3 rd, in float k) {
     return clamp(res, 0.3, 1.0);
 }
 
-float ambient_occlusion(in vec3 pos, in vec3 normal) {
-    float ao = 0.0;
-    float amp = 0.5;
-    float distance = 0.002;
-    for (int i = 0; i < 6; i++) {
-        pos = pos + distance * normal;
-        ao += amp * clamp(distance_scene(pos).d / distance, 0.0, 1.0);
-        amp *= 0.5;
-        distance += 0.002;
-    }
-    return ao;
-}
-
 vec3 ray_march(vec3 p, in vec3 ray) {
     float distance = 0.0;
     float len = 0.0;
@@ -94,10 +81,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
             // shadow
             float shadow = soft_shadow(pos + normal * 0.01, light, 20.0);
 
-            // ambient occulusion
-            float ao = ambient_occlusion(pos, normal);
-
-            color = color * shadow * ao;
+            color = color * shadow;
 
             break;
         }
