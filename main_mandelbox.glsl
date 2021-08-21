@@ -1,4 +1,4 @@
-#iUniform float angle = 50.0 in{10.0, 90.0 }
+#iUniform float dist = 7.0 in{4.5, 15.0 }
 #iUniform float speed = 0.1 in{0.0, 4.0 }
 #iUniform float scale = 2.7 in{2.0, 3.4 }
 #iUniform float min_radius = 0.4 in{0.0, 1.0 }
@@ -14,12 +14,10 @@ uniform vec2 resolution;
 #include "lib/operation.glsl"
 #include "lib/transform.glsl"
 
-const float PI = 3.14159265;
 const int ITER = 256;
 const float MAX_RAY_LENGTH = 100.0;
 
 const vec3 light = vec3(0.577, 0.577, 0.577);
-
 MandelBox mb = MandelBox(3.0, 0.5, 1.0, 10);
 Plane plane = Plane(vec3(0.0, -4.0, 0.0), vec3(0.0, 1.0, 0.0));
 
@@ -107,15 +105,21 @@ vec3 ray_march(vec3 p, in vec3 ray) {
 
 void main(void) {
     // fragment pos
-    vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
+    vec2 coord = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
 
     // camera
     vec3 c_pos = vec3(0.0, 0.0, 8.0);
+    vec3 dir = vec3(0.0, 0.0, -1.0);
+    vec3 right = vec3(1.0, 0.0, 0.0);
+    vec3 top = vec3(0.0, 1.0, 0.0);
+
+    Camera camera = Camera(c_pos, dir, right, top, 50.0);
+    c_pos = spherical_to_orthogonal(mouse_coord_to_hemisphere(mouse * 2.0 - 1.0, dist));
+    look_at_origin(camera, c_pos);
 
     // ray
-    float fov = angle * 0.5 * PI / 180.0;
-    vec3 ray = normalize(vec3(sin(fov) * p.x, sin(fov) * p.y, -cos(fov)));
+    vec3 ray = get_ray(camera, coord);
 
-    vec3 color = ray_march(c_pos, ray);
+    vec3 color = ray_march(camera.pos, ray);
     gl_FragColor = vec4(color, 1.0);
 }
