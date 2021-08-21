@@ -14,6 +14,7 @@ uniform vec2 resolution;
 
 const float PI = 3.14159265;
 const int ITER = 128;
+const int SHADOW_ITER = 80;
 const float MAX_RAY_LENGTH = 30.0;
 const vec3 light = vec3(0.6, 0.5, 0.5);
 
@@ -58,7 +59,7 @@ float soft_shadow(in vec3 p, in vec3 ray, in float k) {
     vec3 pos = p;
     float res = 1.0;
     float len = 0.0;
-    for (int i = 0; i < 90; i++) {
+    for (int i = 0; i < SHADOW_ITER; i++) {
         float d = distance_scene(pos).d;
         res = min(res, k * d / len);
 
@@ -66,7 +67,7 @@ float soft_shadow(in vec3 p, in vec3 ray, in float k) {
             break;
         }
 
-        len += clamp(d, 0.01, 0.2);
+        len += clamp(d, 0.01, 0.05);
         pos = p + ray * len;
     }
     return clamp(res, 0.4, 1.0);
