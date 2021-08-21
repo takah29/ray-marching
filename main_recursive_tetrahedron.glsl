@@ -8,6 +8,7 @@ uniform vec2 mouse;
 uniform vec2 resolution;
 
 #include "object.glsl"
+#include "fractal.glsl"
 #include "operation.glsl"
 #include "transform.glsl"
 
@@ -24,7 +25,7 @@ HitPoint distance_scene(in vec3 p) {
     vec3 q = rotate_z(rotate_x(rotate_y(p, time * speed * 0.5), time * speed * 0.2), time * speed * 0.1);
 
     rt.iterations = rt_iter;
-    float d = distance_func(rt, q / 2.0);
+    float d = distance_estimate(rt, q / 2.0);
 
     // フロア
     float d3 = distance_func(plane, p);

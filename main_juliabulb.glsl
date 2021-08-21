@@ -8,6 +8,7 @@ uniform vec2 mouse;
 uniform vec2 resolution;
 
 #include "object.glsl"
+#include "fractal.glsl"
 #include "operation.glsl"
 #include "transform.glsl"
 
@@ -34,7 +35,7 @@ HitPoint distance_scene(in vec3 p) {
 
     vec4 trap;
     mb.power = power;
-    float d = distance_func_juliabulb(mb, q / 4.0, cc, trap);
+    float d = distance_estimate_juliabulb(mb, q / 4.0, cc, trap);
 
     vec3 col = trap_to_color(trap, lowcol, middlecol, highcol);
 

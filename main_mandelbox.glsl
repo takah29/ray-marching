@@ -10,6 +10,7 @@ uniform vec2 mouse;
 uniform vec2 resolution;
 
 #include "object.glsl"
+#include "fractal.glsl"
 #include "operation.glsl"
 #include "transform.glsl"
 
@@ -30,7 +31,7 @@ HitPoint distance_scene(in vec3 p) {
     mb.min_radius = min_radius;
     mb.fixed_radius = fixed_radius;
 
-    float d1 = distance_func_mandelbox(mb, q * 2.0);
+    float d1 = distance_estimate(mb, q * 2.0);
     float d2 = distance_func(plane, p);
 
     return smooth_union(HitPoint(d1, vec4(WHITE, 1.0)), HitPoint(d2, vec4(BLUE + 0.5, 1.0)), 0.0);
