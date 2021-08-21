@@ -33,11 +33,11 @@ HitPoint distance_scene(in vec3 p) {
 }
 
 // シーンの法線ベクトルの計算
-vec3 get_normal(in vec3 p) {
-    float d = 0.0001;
-    return normalize(vec3(distance_scene(p + vec3(d, 0.0, 0.0)).d - distance_scene(p + vec3(-d, 0.0, 0.0)).d,
-                          distance_scene(p + vec3(0.0, d, 0.0)).d - distance_scene(p + vec3(0.0, -d, 0.0)).d,
-                          distance_scene(p + vec3(0.0, 0.0, d)).d - distance_scene(p + vec3(0.0, 0.0, -d)).d));
+vec3 get_normal(in vec3 pos) {
+    const float ep = 0.001;
+    vec2 e = vec2(1.0, -1.0) * 0.5773;
+    return normalize(e.xyy * distance_scene(pos + e.xyy * ep).d + e.yyx * distance_scene(pos + e.yyx * ep).d +
+                     e.yxy * distance_scene(pos + e.yxy * ep).d + e.xxx * distance_scene(pos + e.xxx * ep).d);
 }
 
 float soft_shadow(in vec3 ro, in vec3 rd, in float k) {
