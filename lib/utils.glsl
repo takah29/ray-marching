@@ -44,6 +44,6 @@ vec3 spherical_to_orthogonal(in vec3 s) {
 }
 
 vec3 mouse_coord_to_hemisphere(in vec2 mouse_coord, in float r) {
-    float c = 1.72; // フロアに接触しない値を設定する
-    return vec3(r, (1.001 - mouse_coord.y) / 2.0 * (PI / c), 1.5 * mouse_coord.x * PI);
+    float c = 1.9; // フロアに接触しない値を設定する
+    return vec3(r, (1.001 + mouse_coord.y) / 2.0 * (PI / c), -1.5 * mouse_coord.x * PI);
 }
