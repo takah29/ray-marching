@@ -1,5 +1,5 @@
 #iUniform float dist = 7.0 in{4.5, 15.0 }
-#iUniform float speed = 0.1 in{0.0, 4.0 }
+#iUniform float speed = 0.5 in{0.0, 4.0 }
 #iUniform int ms_iter = 5 in{0, 6 }
 
 precision mediump float;
@@ -28,7 +28,7 @@ HitPoint distance_scene(in vec3 p) {
     // フロア
     float d3 = distance_func(plane, p);
 
-    return smooth_union(HitPoint(d, vec4(RED + 0.5, 1.0)), HitPoint(d3, vec4(BLUE + 0.5, 1.0)), 0.2);
+    return smooth_union(HitPoint(d, vec4(CYAN + 0.5, 1.0)), HitPoint(d3, vec4(BLUE + 0.5, 1.0)), 0.2);
 }
 
 // シーンの法線ベクトルの計算

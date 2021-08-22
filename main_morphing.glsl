@@ -1,7 +1,7 @@
 #iUniform float dist = 7.0 in{4.5, 15.0 }
-#iUniform float speed = 0.1 in{0.0, 4.0 }
+#iUniform float speed = 0.5 in{0.0, 4.0 }
 #iUniform float ring_size = 3.0 in{0.0, 20.0 }
-#iUniform float morphing = 0.0 in{0.0, 1.0 }
+#iUniform float morphing = 0.5 in{0.0, 1.0 }
 #iUniform float sparseness = 0.4 in{0.3, 2.0 }
 
 precision mediump float;
@@ -54,7 +54,7 @@ float soft_shadow(in vec3 p, in vec3 ray, in float k) {
             break;
         }
 
-        len += clamp(d, 0.01, 0.2);
+        len += clamp(d, 0.01, 0.5);
         pos = p + ray * len;
     }
     return clamp(res, 0.3, 1.0);
