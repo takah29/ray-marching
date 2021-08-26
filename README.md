@@ -7,8 +7,8 @@
 * GLSL 4.6
 * Shader Toy v0.10.15 (Visual Studio Code Extension)
 
-## Screen Shot
+## WebGL Demo
 
-![Morphing](fig/morphing.png)
-![MandelBox](fig/mandelbox.png)
-![Juliabulb](fig/juliabulb.png)
+[![Morphing](fig/morphing.png)](https://takah29.github.io/ray-marching/main_morphing.html)
+[![MandelBox](fig/mandelbox.png)](https://takah29.github.io/ray-marching/main_mandelbox.html)
+[![Juliabulb](fig/juliabulb.png)](https://takah29.github.io/ray-marching/main_juliabulb.html)

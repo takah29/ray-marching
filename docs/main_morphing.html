@@ -778,7 +778,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
         pos = p + ray * len;
 
         // hit check
-        if (abs(hp.d) < 0.0001) {
+        if (abs(hp.d) < len * 0.0001) {
             vec3 normal = get_normal(pos);
 
             // light
@@ -971,9 +971,9 @@ void main(void) {
 
     let renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, context: gl, preserveDrawingBuffer: true });
     let resolution = new THREE.Vector3();
-    let mouse = new THREE.Vector4(-1, -1, -1, -1);
+    let mouse = new THREE.Vector4(606, 639, -606, -639);
     let mouseButton = new THREE.Vector4(0, 0, 0, 0);
-    let normalizedMouse = new THREE.Vector2(0.012546125461254613, 0.5362229102167183);
+    let normalizedMouse = new THREE.Vector2(0.005904059040590406, 0.44936708860759494);
     let frameCounter = 0;
 
     // Audio Init
