@@ -9,6 +9,8 @@
 
 ## WebGL Demo
 
+GeForce GTX 1080 or higher recommended.
+
 [![Morphing](fig/morphing.png)](https://takah29.github.io/ray-marching/main_morphing.html)
 [![MandelBox](fig/mandelbox.png)](https://takah29.github.io/ray-marching/main_mandelbox.html)
 [![Juliabulb](fig/juliabulb.png)](https://takah29.github.io/ray-marching/main_juliabulb.html)
