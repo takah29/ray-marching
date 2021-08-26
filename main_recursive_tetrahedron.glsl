@@ -66,7 +66,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
         pos = p + ray * len;
 
         // hit check
-        if (abs(hp.d) < 0.0001) {
+        if (abs(hp.d) < len * 0.001) {
             vec3 normal = get_normal(pos);
 
             // light

@@ -93,7 +93,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
         pos = pos + ray * hp.d * omega;
 
         // hit check
-        if (abs(hp.d) < 0.0005) {
+        if (abs(hp.d) < len * 0.0002) {
             vec3 normal = get_normal(pos);
 
             // point light
@@ -102,7 +102,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
             vec3 halfLE = normalize(rd - ray);
 
             vec3 diff = clamp(dot(rd, normal), 0.1, 1.0) * hp.mtl.xyz * 1.5;
-            float spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 100.0) * hp.mtl.w;
+            float spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 50.0) * hp.mtl.w;
             color += vec3(diff) + vec3(spec);
 
             float shadow = soft_shadow(pos + normal * 0.01, rd, 30.0);

@@ -81,7 +81,7 @@ vec3 ray_march(vec3 p, in vec3 ray) {
         pos = pos + ray * hp.d;
 
         // hit check
-        if (abs(hp.d) < 0.01) {
+        if (abs(hp.d) < len * 0.003) {
             vec3 normal = get_normal(pos);
 
             // directional light

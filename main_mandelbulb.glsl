@@ -79,14 +79,14 @@ vec3 ray_march(vec3 p, in vec3 ray) {
         pos = p + ray * len;
 
         // hit check
-        if (abs(hp.d) < 0.001) {
+        if (abs(hp.d) < len * 0.0001) {
             vec3 normal = get_normal(pos);
 
             // light
             vec3 halfLE = normalize(light - ray);
 
             vec3 diff = clamp(dot(light, normal), 0.1, 1.0) * hp.mtl.xyz;
-            float spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 500.0) * hp.mtl.w;
+            float spec = pow(clamp(dot(halfLE, normal), 0.0, 1.0), 100.0) * hp.mtl.w;
             color = vec3(diff) + vec3(spec);
 
             // shadow
