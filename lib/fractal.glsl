@@ -128,6 +128,7 @@ vec3 trap_to_color(in vec4 trap, in vec3 lowcol, in vec3 middlecol, in vec3 high
 }
 
 // Juliabulb
+#define DERIVATIVE_BIAS 0.1
 float distance_estimate_juliabulb(in Mandelbulb mb, in vec3 p, in vec3 c, out vec4 res_color) {
     vec3 z = p;
     float m = dot(z, z);
@@ -136,7 +137,9 @@ float distance_estimate_juliabulb(in Mandelbulb mb, in vec3 p, in vec3 c, out ve
 
     for (int i = 0; i < mb.iterations; i++) {
         // dz = 8*z^7*dz
-        dz = 8.0 * pow(m, 3.5) * dz;
+        // estimation tweak (https://www.shadertoy.com/view/MdSBDR)
+        dz = max(dz * DERIVATIVE_BIAS, 8.0*pow(m ,3.5)*dz);
+        // dz = 8.0 * pow(m, 3.5) * dz;
 
         // z = z^8+z
         float r = length(z);
